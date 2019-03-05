@@ -9,6 +9,7 @@ async function sandbox (actor) {
     const awesome = movies.filter(movie => movie.metascore >= 77);
 
     console.log(`🍿 ${movies.length} movies found.`);
+    console.log(movies);
     console.log(JSON.stringify(movies, null, 2));
     console.log(`🥇 ${awesome.length} awesome movies found.`);
     console.log(JSON.stringify(awesome, null, 2));
