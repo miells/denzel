@@ -17,7 +17,6 @@ const imdb = require('./src/imdb');
 const DENZEL_IMDB_ID = 'nm0000243';
 
 
-
 app.listen(9292, () => {
     MongoClient.connect(CONNECTION_URL, { useNewUrlParser: true }, (error, client) => {
         if(error) {
@@ -49,17 +48,53 @@ app.get("/movies/populate", async (request, response) => {
       if(error) {
           return response.status(500).send(error);
       }
-      response.json({ total: movies.length});
+      response.json({ total: result.insertedCount});
   });
 });
 
-/*
+
+
 app.get("/movies", (request, response) => {
-  collection.findOne(movies, (error, result) => {
+  collection.aggregate([{$match: {metascore: {$gt: 70}}}, {$sample: {size:1}}]).toArray( (error, result) => {
       if(error) {
           return response.status(500).send(error);
       }
-      response.json({ total: movies.length});
+      response.json(result);
   });
 });
-*/
+
+
+app.get("/movies/search", (request, response) => {
+  var limitParam = +request.query.limit;
+  /*if(limit = undefined){
+    limit = 5;
+  }*/
+  var metascoreParam = +request.query.metascore;
+  /*if(metascoreParam = undefined){
+    metascoreParam = 0;
+  }*/
+  collection.aggregate([{$match: { metascore: {$gt: metascoreParam} }}, {$sort: {metascore: -1}}, {$limit: limitParam }]).toArray( (error, result) => {
+    if(error) {
+        return response.status(500).send(error);
+    }
+    response.json(result);
+  })
+});
+
+
+app.get("/movies/:id", (request, response) => {
+  var movieid = request.params.id;
+  var query = {id: movieid};
+  collection.find(query).toArray( (error, result) => {
+    if(error) {
+        return response.status(500).send(error);
+    }
+    response.json(result);
+  })
+});
+
+
+app.post("/movies/:id", (request, response) => {
+  
+  console.log(request.body)
+})
