@@ -95,6 +95,10 @@ app.get("/movies/:id", (request, response) => {
 
 
 app.post("/movies/:id", (request, response) => {
-  
-  console.log(request.body)
+  var movieid = request.params.id;
+  var date = request.body.date;
+  var review = request.body.review;
+
+  collection.updateOne({id: movieid}, {$set: {date: date, review: review}});
+  response.json({id: movieid});
 })
