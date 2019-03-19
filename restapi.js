@@ -65,14 +65,15 @@ app.get("/movies", (request, response) => {
 
 
 app.get("/movies/search", (request, response) => {
-  var limitParam = +request.query.limit;
-  /*if(limit = undefined){
-    limit = 5;
-  }*/
-  var metascoreParam = +request.query.metascore;
-  /*if(metascoreParam = undefined){
-    metascoreParam = 0;
-  }*/
+  if(request.query.limit){
+    var limitParam = +request.query.limit;
+  }
+  else { var limitParam = 5; }
+  if(request.query.metascore)
+  {
+    var metascoreParam = +request.query.metascore;
+  }
+  else { var metascoreParam = 0; }
   collection.aggregate([{$match: { metascore: {$gt: metascoreParam} }}, {$sort: {metascore: -1}}, {$limit: limitParam }]).toArray( (error, result) => {
     if(error) {
         return response.status(500).send(error);
