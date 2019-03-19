@@ -13,8 +13,9 @@ movieType = new GraphQLObjectType({
         metascore: { type: GraphQLInt },
         synopsis: { type: GraphQLString },
         title: { type: GraphQLString },
-        year: { type: GraphQLInt }
-
+        year: { type: GraphQLInt },
+        date: { type: GraphQLString},
+        review: { type: GraphQLString}
     }
 });
 

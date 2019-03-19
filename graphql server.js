@@ -6,6 +6,7 @@ const {GraphQLSchema} = require('graphql');
 const {queryType} = require('./query.js');
 
 
+
 //setting up the port number and express app
 const port = 9292;
 const app = express();

@@ -20,6 +20,15 @@ var database, collection;
 const imdb = require('./src/imdb');
 const DENZEL_IMDB_ID = 'nm0000243';
 
+async function getMovies(actor){
+  try {
+    return await imdb(actor);
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
+}
+
 
 app.listen(5000, () => {
     MongoClient.connect(CONNECTION_URL, { useNewUrlParser: true }, (error, client) => {
@@ -37,6 +46,14 @@ app.listen(5000, () => {
 const queryType = new GraphQLObjectType({
     name: 'Query',
     fields: {
+        populate: {
+          type: GraphQLString,
+          resolve: async function() {
+            var movies = await getMovies(DENZEL_IMDB_ID);
+            await collection.insertMany(movies);
+            return "total : " + movies.length;
+          }
+        },
         random: {
           type: movieType,
           resolve: async function() {
@@ -49,24 +66,37 @@ const queryType = new GraphQLObjectType({
           args: { id: { type: GraphQLString } },
           resolve: async function(source, args) {
             var query = {id: args.id};
-            var res = await collection.find(query).toArray();
-            return res[0];
+            var res = await collection.findOne(query);
+            return res;
           }
         },
         searchDenzelMovie: {
           type: new GraphQLList(movieType),
           args: { limit: { type: GraphQLInt }, metascore: { type: GraphQLInt}},
           resolve: async function(source, args) {
-            var limitParam = args.limit;
-            /*if(limit = undefined){
-              limit = 5;
-            }*/
-            var metascoreParam = args.metascore;
-            /*if(metascoreParam = undefined){
-              metascoreParam = 0;
-            }*/
+            if(args.limit){
+              var limitParam = args.limit;
+            }
+            else { var limitParam = 5; }
+            if(args.metascore)
+            {
+              var metascoreParam = args.metascore;
+            }
+            else { var metascoreParam = 0; }
+
             var res = await collection.aggregate([{$match: { metascore: {$gt: metascoreParam} }}, {$sort: {metascore: -1}}, {$limit: limitParam }]).toArray();
             return res;
+          }
+        },
+        saveDateReview: {
+          type: movieType,
+          args: { id: {type: GraphQLString}, date: {type: GraphQLString}, review: { type: GraphQLString}},
+          resolve: async function(source, args) {
+            var movieid = args.id;
+            var date = args.date;
+            var review = args.review;
+            await collection.updateOne({id: movieid}, {$set: {date: date, review: review}});
+            return await collection.findOne({id: movieid});
           }
         }
     }
